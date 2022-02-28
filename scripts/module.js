@@ -1,72 +1,76 @@
+const MT = {};
 
-class MT {
+MT.effectIconPath = 'icons/torch-brown-lit.webp';
 
-    static init() {
-        /* Example settings */
-        // game.settings.register("MT", "size", {
-        //     name: "Size Adjustment with Flags",
-        //     hint: "Allow for size adjustment to be made with flags, always returns tokens to prototype token defaults if flag is not present",
-        //     scope: "world",
-        //     config: true,
-        //     default: false,
-        //     type: Boolean,
-        // });
-        // game.settings.register("MT", "presets", {
-        //     scope: "world",
-        //     config: false,
-        //     default: defaultPresets,
-        //     type: Object,
-        // });
-        // game.settings.register("MT", "conversion", {
-        //     name: "conversion level",
-        //     scope: "world",
-        //     config: false,
-        //     default: "0.2.15",
-        //     type: String,
-        // });
+Hooks.on("init", () => {
+
+    // ASCII Artwork
+    MT.ASCII = `    __________________________
+    _____  __        ____   _
+    |  _ \\ | ]       | | ] / ]
+    | | \\ \\| |       | | |/ /
+    | |__) ) }  /\\   ] ] / /
+    |  _  /\\ \\_/  \\_/ /| | \\
+    | | \\ \\ \\   /\\   / | |\\ \\
+    |_|  \\_] \\_/  \\_/  |_| \\_]
+    __________________________
+    `;
+    console.log(`RWK Module Test | Initializing the RWK ATL addon\n${MT.ASCII}`);
+
+    if (game.system.data.name !== "dnd5e") {
+        console.error(`RWK Module Test needs DnD5e`);
+        return;
+    }
+});
+
+Hooks.on("ready", () => {
+
+    if (game.system.data.name !== "dnd5e") {
+        ui.notifications.info("Module Test needs DnD5e");
+        return;
     }
 
-    static ready() {
+    Hooks.on("preUpdateItem", async (item, change) => {
 
-        Hooks.on("init", () => {
-            if (game.system.data.name !== "dnd5e") {
-                ui.notifications.info("Module Test needs DnD5e");
-                return;
+        if (typeof change.data === 'undefined') return;
+        const updates = [];
+        // only check for change in equipped status
+        if (typeof change.data.equipped !== 'undefined') {
+            // only check for items with effects
+            item.actor.effects.forEach(effect => {
+                // check if the effect origin is the item
+                if (effect.data.origin.includes(item.id)) {
+                    // disable effect if the item it is on is unequipped
+                    if (!change.data.equipped) {
+                        updates.push({ _id: effect.id, disabled: true });
+                    }
+                }
+            });
+            // don't update if array is empty
+            if (updates.length > 0) {
+                await item.actor.updateEmbeddedDocuments("ActiveEffect", updates);
             }
+        }
+    });
+
+    Hooks.on("createChatMessage", async (chatMessage) => {
+
+        const actor = game.actors.get(chatMessage.data.speaker.actor);
+        const item = actor.items.getName(chatMessage.data.flavor);
+        const updates = [];
+        // only check for items with effects
+        item.effects.forEach(itemEffect => {
+            // find effect on actor with same name as on item
+            const actorEffect = actor.effects.find(ae => ae.data.label == itemEffect.data.label);
+            updates.push({ _id: actorEffect.id, disabled: false });
         });
-
-        Hooks.on("renderSidebarTab", async (app, html) => {
-            if (!game.user.isGM) return;
-
-        });
-
-        Hooks.on("updateActiveEffect", async (effect, options) => {
-
-            ui.notifications.info("Active Effect updated!");
-        });
-
-        Hooks.on("updateItem", async (item, options) => {
-            ui.notifications.info("Updating that item you are!");
-            let itemData = item.data;
-            const effects = itemData.effects;// ? false : true;
-            itemData.effects.values().disabled = disabled;
-            //update
-
-            let updatedData = Object.assign(item.data.effects, item.data.effects)
-
-            //await item.update({ effects: updatedData })
-            ui.notifications.info("Updated that item you have!");
-        })
-
-        Hooks.on("updateActor", async (actor, options) => {
-            ui.notifications.info("Updating that actor you are!");
-        })
-
-        Hooks.on("dropActorSheetData", async (actor, sheet, data) => {
-            ui.notifications.info("Dropping an item you are!");
-        })
-    }
-}
-
-Hooks.on("init", MT.init);
-Hooks.on("ready", MT.ready);
+        // if the item is not equipped set it to euipped
+        if (!getProperty(item.data, "data.equipped")) {
+            await item.update({ ["data.equipped"]: true });
+        }
+        // don't update if array is empty
+        if (updates.length > 0) {
+            await actor.updateEmbeddedDocuments("ActiveEffect", updates);
+        }
+    });
+});
