@@ -23,6 +23,7 @@ Hooks.on("init", () => {
     }
 });
 
+
 Hooks.on("ready", () => {
 
     if (game.system.data.name !== "dnd5e") {

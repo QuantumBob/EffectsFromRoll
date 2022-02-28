@@ -1,7 +1,7 @@
 {
-    "name": "module-test",
-    "title": "RWK Module Test",
-    "description": "A test space for module coding",
+    "name": "effects-from-roll",
+    "title": "RWK Effects From Roll",
+    "description": "turns on effects when item is rolled",
     "author": "Rob Kirk",
     "version": "0.0.1",
     "minimumCoreVersion": "0.9",
@@ -20,7 +20,7 @@
             "path": "languages/en.json"
         }
     ],
-    "url": "https://github.com/QuantumBob/module-test",
-    "manifest": "https://github.com/QuantumBob/module-test/releases/download/v0.0.1/module.json",
-    "download": "https://github.com/QuantumBob/module-test/releases/download/v0.0.1/module-test-0.0.1.zip"
+    "url": "https://github.com/QuantumBob/EffectsFromRoll",
+    "manifest": "https://github.com/QuantumBob/EffectsFromRoll/releases/download/v0.0.1/module.json",
+    "download": "https://github.com/QuantumBob/EffectsFromRoll/releases/download/v0.0.1/effects-from-roll-0.0.1.zip"
 }
